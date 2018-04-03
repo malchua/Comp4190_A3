@@ -15,11 +15,8 @@ MAX_ITERS = 100000 # Just so it doesn't run forever...
 def essentiallyEqual( x, y ):
     return abs( x - y ) < 1e-1
 
-def hitGoal( goal, tree ):
-    node = tree[len( tree ) - 1]
+def hitGoal( goal, node ):
     line = goal - node
-    # if essentiallyEqual( node[0], goal[0] ) and essentiallyEqual( node[1], goal[1] ):
-    #     return True
     if lineLength( line ) < 1e-1:
         return True
 
@@ -96,6 +93,11 @@ def ExploreDomain( domain, initial, steps, goal ):
                     if ( not domain.CheckOverlap( r ) ):
                         pos = newpos
                         log[i,:] = pos
+                        # Check if we reached the goal.
+                        atGoal = hitGoal( goal, pos )
+                        if atGoal:
+                            stop = True
+
                     else:
                         stop = True
 
@@ -120,7 +122,7 @@ def ExploreDomain( domain, initial, steps, goal ):
             print( "no closest node found.... This is an error" )
 
         iter = iter + 1
-        atGoal = hitGoal( goal, tree )
+        atGoal = hitGoal( goal, tree[len( tree ) - 1] )
         if atGoal == True:
             print( "Found it!" )
 
