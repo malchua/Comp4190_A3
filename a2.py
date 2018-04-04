@@ -265,7 +265,7 @@ def main( argv = None ):
         print( "Did not find goal." )
     else:
         print( "Found goal in: ", total_time, ". Path length: ", length )
-        
+
     qtd.Draw(ax)
     n = qtd.CountCells()
     ax.set_title('Quadtree Decomposition\n{0} cells'.format(n))
