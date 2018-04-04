@@ -28,8 +28,8 @@ class CellDecomposition:
                 color = '#ffff00'
                 # if node in graph:
                 #     color = "#ff0000"
-                # if node[4] > 5:
-                #     color = "#ff00ff"
+                if node[5] == True:
+                    color = "#ff00ff"
                 r.set_fill(True)
                 r.set_facecolor(color)
             elif ( node[1] == 'obstacle'):
@@ -106,6 +106,9 @@ def nodeContains( a ):
 
 def assignHeuristics( goal ):
     curr = nodeContains( goal )
+    if curr is None:
+        print( 'Goal node is None' )
+        
     curr[4] = 0
     changed = True
     while changed:
@@ -120,10 +123,36 @@ def assignHeuristics( goal ):
 
 
 def checkAdjacency( a, b ):
-    ra = a[0]
-    rb = b[0]
-    if ra.x <= rb.x + rb.width and ra.x + ra.width >= rb.x and ra.y <= rb.y + rb.height and ra.y + ra.height >= rb.y:
-        # They overlap somewhere.
+    # ra = a[0]
+    # rb = b[0]
+    # if ra.x <= rb.x + rb.width and ra.x + ra.width >= rb.x and ra.y <= rb.y + rb.height and ra.y + ra.height >= rb.y:
+    #     # They overlap somewhere.
+    #     a[3].append( b )
+    #     b[3].append( a )
+    adjacent = False
+    rectangle1 = a[0]
+    rectangle2 = b[0]
+
+    r1MinX = rectangle1.x
+    r1MaxX = rectangle1.x + rectangle1.width
+    r1MinY = rectangle1.y
+    r1MaxY = rectangle1.y + rectangle1.height
+
+    r2MinX = rectangle2.x
+    r2MaxX = rectangle2.x + rectangle2.width
+    r2MinY = rectangle2.y
+    r2MaxY = rectangle2.y + rectangle2.height
+
+    if ( r1MinX == r2MaxX and r1MinY <= r2MaxY and r1MaxY >= r2MinY):
+        adjacent = True
+    elif ( r1MaxX == r2MinX and r1MinY <= r2MaxY and r1MaxY >= r2MinY ):
+        adjacent = True
+    elif ( r1MinY == r2MaxY and r1MinX <= r2MaxX and r1MaxX >= r2MinX ):
+        adjacent = True
+    elif ( r1MaxY == r2MinY and r1MinX <= r2MaxX and r1MaxX >= r2MinX ):
+        adjacent = True
+
+    if adjacent:
         a[3].append( b )
         b[3].append( a )
 
@@ -151,22 +180,24 @@ def aStart( initial, goal ):
     madeMove = True
 
     while not atGoal and madeMove:
+        madeMove = False
         if nodeContains( goal ) is checked[len( checked ) - 1]:
             print( 'Found goal near: ', pos )
             atGoal = True
         else:
             print( "In" )
-            madeMove = False
             nextNode = None
             bestCost = float('inf')
             for node in checked:
                 cost = node[4]
+                print( "checking: ", node, " :", len( node[3] ) )
                 for adjNode in node[3]:
                     if adjNode[5] == False:
                         estCost = cost + adjNode[4]
                         if estCost < bestCost:
                             bestCost = estCost
                             nextNode = adjNode
+
 
             if nextNode is not None:
                 madeMove = True
@@ -178,6 +209,7 @@ def aStart( initial, goal ):
                 nextNode[4] = totalCost
                 # move to new location
                 pos = centre
+                checked.append( nextNode )
 
             else:
                 print( "No move made." )
@@ -193,7 +225,7 @@ def main( argv = None ):
     maxOWidth = 5.0
     maxOHeight = 5.0
 
-    numObstacles = 1
+    numObstacles = 3
     if len(argv) > 0:
         numObstacles = int(argv[0])
 
@@ -218,6 +250,9 @@ def main( argv = None ):
     qtd = QuadTreeDecomposition(pp, 0.1)
     markAdjacentNodes()
     assignHeuristics( goals[0] )
+    for node in graph:
+        print(node[4])
+
     aStart( initial, goals[0] )
     qtd.Draw(ax)
     n = qtd.CountCells()
