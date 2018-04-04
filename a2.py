@@ -108,7 +108,7 @@ def assignHeuristics( goal ):
     curr = nodeContains( goal )
     if curr is None:
         print( 'Goal node is None' )
-        
+
     curr[4] = 0
     changed = True
     while changed:
@@ -190,13 +190,14 @@ def aStart( initial, goal ):
             bestCost = float('inf')
             for node in checked:
                 cost = node[4]
-                print( "checking: ", node, " :", len( node[3] ) )
+                print( "hi" )
                 for adjNode in node[3]:
                     if adjNode[5] == False:
                         estCost = cost + adjNode[4]
                         if estCost < bestCost:
                             bestCost = estCost
                             nextNode = adjNode
+
 
 
             if nextNode is not None:
