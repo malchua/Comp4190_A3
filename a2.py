@@ -6,6 +6,7 @@ import numpy as np
 import math
 import copy
 from pathplanning import PathPlanningProblem, Rectangle
+import time
 
 graph = []
 
@@ -174,6 +175,10 @@ def aStart( initial, goal ):
     pos = np.array( initial )
     checked = []
     checked.append( nodeContains( initial ) )
+    if checked[0] is None:
+        print("Starting node not found.")
+        return 0
+
     checked[0][5] = True
     checked[0][4] = lineLength( getCentre( checked[0] ) - pos )
     atGoal = False
@@ -185,12 +190,10 @@ def aStart( initial, goal ):
             print( 'Found goal near: ', pos )
             atGoal = True
         else:
-            print( "In" )
             nextNode = None
             bestCost = float('inf')
             for node in checked:
                 cost = node[4]
-                print( "hi" )
                 for adjNode in node[3]:
                     if adjNode[5] == False:
                         estCost = cost + adjNode[4]
@@ -215,18 +218,20 @@ def aStart( initial, goal ):
             else:
                 print( "No move made." )
 
+        return checked[len( checked ) - 1][4], atGoal
+
 
 
 def main( argv = None ):
     if ( argv == None ):
         argv = sys.argv[1:]
 
-    width = 10.0
-    height = 10.0
-    maxOWidth = 5.0
-    maxOHeight = 5.0
+    width = 100.0
+    height = 100.0
+    maxOWidth = 50.0
+    maxOHeight = 50.0
 
-    numObstacles = 3
+    numObstacles = 10
     if len(argv) > 0:
         numObstacles = int(argv[0])
 
@@ -248,13 +253,19 @@ def main( argv = None ):
         g = plt.Rectangle((g[0],g[1]), 0.1, 0.1, facecolor='#00ff00')
         ax.add_patch(g)
 
+    start_time = time.time()
     qtd = QuadTreeDecomposition(pp, 0.1)
     markAdjacentNodes()
     assignHeuristics( goals[0] )
-    for node in graph:
-        print(node[4])
 
-    aStart( initial, goals[0] )
+    length, found = aStart( initial, goals[0] )
+    total_time = time.time() - start_time
+
+    if found == False:
+        print( "Did not find goal." )
+    else:
+        print( "Found goal in: ", total_time, ". Path length: ", length )
+        
     qtd.Draw(ax)
     n = qtd.CountCells()
     ax.set_title('Quadtree Decomposition\n{0} cells'.format(n))
