@@ -137,35 +137,50 @@ def markAdjacentNodes():
 def lineLength( line ):
     return math.sqrt( line[0]*line[0] + line[1]*line[1] )
 
-def aStart( initial ):
+def getCentre( node ):
+    r = node[0]
+    return np.array( [r.x + r.width / 2, r.y + r.height / 2] )
+
+def aStart( initial, goal ):
     pos = np.array( initial )
     checked = []
     checked.append( nodeContains( initial ) )
     checked[0][5] = True
+    checked[0][4] = lineLength( getCentre( checked[0] ) - pos )
     atGoal = False
     madeMove = True
 
     while not atGoal and madeMove:
-        madeMove = False
-        nextNode = None
-        bestCost = float('inf')
-        for node in checked:
-            cost = node[4]
-            for adjNode in node[3]:
-                if adjNode[5] == False:
-                    estCost = cost + adjNode[4]
-                    if estCost < bestCost:
-                        bestCost = estCost
-                        nextNode = adjNode
+        if nodeContains( goal ) is checked[len( checked ) - 1]:
+            print( 'Found goal near: ', pos )
+            atGoal = True
+        else:
+            print( "In" )
+            madeMove = False
+            nextNode = None
+            bestCost = float('inf')
+            for node in checked:
+                cost = node[4]
+                for adjNode in node[3]:
+                    if adjNode[5] == False:
+                        estCost = cost + adjNode[4]
+                        if estCost < bestCost:
+                            bestCost = estCost
+                            nextNode = adjNode
 
-        if nextNode is not None:
-            madeMove = True
-            nextNode[5] = True
-            #calc the total cost up to the centre of this node.
-            totalCost = cost # + lineLength( centre of node - pos )
-            # pos = centre of node.
-            # store the cost in node.
-            nextNode[4] = totalCost
+            if nextNode is not None:
+                madeMove = True
+                nextNode[5] = True
+                centre = getCentre( nextNode )
+                #calc the total cost up to the centre of this node.
+                totalCost = cost + lineLength( centre - pos )
+                # store the cost in node.
+                nextNode[4] = totalCost
+                # move to new location
+                pos = centre
+
+            else:
+                print( "No move made." )
 
 
 
@@ -178,7 +193,7 @@ def main( argv = None ):
     maxOWidth = 5.0
     maxOHeight = 5.0
 
-    numObstacles = 3
+    numObstacles = 1
     if len(argv) > 0:
         numObstacles = int(argv[0])
 
@@ -203,6 +218,7 @@ def main( argv = None ):
     qtd = QuadTreeDecomposition(pp, 0.1)
     markAdjacentNodes()
     assignHeuristics( goals[0] )
+    aStart( initial, goals[0] )
     qtd.Draw(ax)
     n = qtd.CountCells()
     ax.set_title('Quadtree Decomposition\n{0} cells'.format(n))
